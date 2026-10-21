@@ -208,6 +208,8 @@ tempCodeRunnerFile.py
 # Ruff stuff:
 .ruff_cache/
 
+# Database
+*.db
 # PyPI configuration file
 .pypirc
 
@@ -218,3 +220,5 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+# Database
+*.db
