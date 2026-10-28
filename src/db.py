@@ -19,19 +19,20 @@ def consult(ruta=DB_PATH, consulta="", parametros=()):
             cursor.execute("PRAGMA foreign_keys = ON")
             # Ejecutando consulta
             cursor.execute(consulta, parametros)
-            
+
             if tipo_querry.startswith("SELECT"):
                 return cursor.fetchall();
-            
+
             elif tipo_querry.startswith("INSERT"):
                 conexion.commit()
                 return cursor.lastrowid
             else:
                 conexion.commit()
                 return cursor.rowcount
-            
-    except sql.Error as e:
-        print(f"Error al conectar o ejecutar consulta: {e}")
+
+    except sql.Error as err:
+        print(f"La consulta ha fallado: {err=}, {type(err)=}")
+        raise 
 
 
 def crear_tablas(ruta=DB_PATH):
