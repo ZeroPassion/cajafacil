@@ -1,13 +1,12 @@
 from src.db import consult, DB_PATH
 from dataclasses import dataclass
-from decimal import Decimal
 
 @dataclass
 class DataProducto:
     nombre: str
     categoria: str
-    costo: Decimal
-    precio: Decimal
+    costo: int
+    precio: int
     stock_inicial: int = 0
     stock_minimo: int = 0
 
@@ -72,8 +71,8 @@ def desactivar_producto(ID, ruta=DB_PATH):
         Exception: Si el valor sobrepsa el numero actual de productos, levanta error.
     """    
     sql_querry="""UPDATE productos SET activo = 0 WHERE id = ?"""
-    result = consult(ruta=ruta, consulta=sql_querry, parametros=ID)
-    if result == 0:
+    result = consult(ruta=ruta, consulta=sql_querry, parametros=(ID,))
+    if result == None:
         raise ValueError("La entrada asociada con el ID no existe.")
     return result
 
@@ -84,13 +83,13 @@ def productos_bajo_stock(ruta=DB_PATH):
         ruta (string, optional): Referente base de datos. Defaults to DB_PATH.
 
     Raises:
-        ValueError: _description_
+        Exception: Si devuelve un None es error.
 
     Returns:
-        _type_: _description_
+        List: Devuelve una lista, este vacia o no, con los resultados.
     """    
-    sql_querry = """SELECT * FROM productos WHERE stock <= stock_minimo"""
+    sql_querry = """SELECT * FROM productos WHERE stock <= stock_minimo AND activo = 1"""
     result = consult(ruta=ruta,consulta=sql_querry)
-    if len(result) == 0:
+    if result == None:
         raise Exception("No existe ningun producto con stock por debajo del minimo actualmente.")
     return result

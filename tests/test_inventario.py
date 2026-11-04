@@ -1,7 +1,6 @@
 import pytest
 from src.db import crear_tablas
 from src.inventario import crear_producto, listar_productos, DataProducto, desactivar_producto, productos_bajo_stock
-from decimal import Decimal
 from dataclasses import replace
 
 @pytest.fixture
@@ -9,8 +8,8 @@ def producto_valido():
     return DataProducto(
         nombre="Teclado Mecanico",
         categoria="Electronico",
-        costo=Decimal("45.00"),
-        precio=Decimal("89.00"),
+        costo=int("4500"),
+        precio=int("8900"),
         stock_inicial=10,
         stock_minimo=2
     )
@@ -27,7 +26,7 @@ def test_crear_un_producto(producto_valido, ruta):
     assert lastrow is not None
     assert lastrow > 0
 
-def test_listar_productos(ruta):
+def test_listar_productos(ruta, producto_valido):
     crear_producto(ruta=ruta, producto=producto_valido)
     result = listar_productos(ruta=ruta)
     assert len(result) > 0 
@@ -38,10 +37,12 @@ def test_listar_productos(ruta):
 def test_desactivar_productos(ruta,producto_valido):
     prod = crear_producto(ruta=ruta,producto=producto_valido)
     assert len(listar_productos(ruta=ruta)) > 0
-    desactivar_producto(prod,ruta=ruta)
+    desactivar_producto(ID=prod, ruta=ruta)
     assert len(listar_productos(ruta=ruta)) == 0
 
 def test_productos_bajo_stock(ruta,producto_valido):
-    pro1 = crear_producto(ruta=ruta, producto=replace(producto_valido, stock_inicial=1, stock_minimo=2))
-    pro2 = crear_producto(ruta=ruta, producto=replace(producto_valido, stock_inicial=10, stock_minimo=2))
-    assert len(productos_bajo_stock(ruta=ruta)) == 1
+    pro1 = crear_producto(ruta=ruta, producto=replace(producto_valido, stock_inicial=1, stock_minimo=2, nombre="PROD1"))
+    pro2 = crear_producto(ruta=ruta, producto=replace(producto_valido, stock_inicial=10, stock_minimo=2, nombre="PROD2"))
+    product = productos_bajo_stock(ruta=ruta)
+    assert len(product) == 1
+    assert "PROD1" in product[0]

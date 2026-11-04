@@ -44,8 +44,8 @@ def crear_tablas(ruta=DB_PATH):
             id INTEGER PRIMARY KEY, 
             nombre VARCHAR(50) NOT NULL UNIQUE,
             categoria VARCHAR(50) NOT NULL, 
-            costo DEC(18,2) NOT NULL DEFAULT 0.00, 
-            precio DEC(18,2) NOT NULL DEFAULT 0.00, 
+            costo INT NOT NULL DEFAULT 0.00, 
+            precio INT NOT NULL DEFAULT 0.00, 
             stock INT NOT NULL DEFAULT 0, 
             stock_minimo INT NOT NULL DEFAULT 0, 
             activo BOOL NOT NULL DEFAULT 1
@@ -81,7 +81,7 @@ def crear_tablas(ruta=DB_PATH):
             cliente_id INT NOT NULL,
             fecha DATETIME NOT NULL,
             tipo_pago CHAR NOT NULL,
-            total DEC(18,2) NOT NULL DEFAULT 0.00,
+            total INT NOT NULL DEFAULT 0.00,
             CONSTRAINT chk_tipo_pago CHECK (tipo_pago IN ('c','f')),
             FOREIGN KEY (cliente_id) REFERENCES clientes(id)
         )"""
@@ -93,8 +93,8 @@ def crear_tablas(ruta=DB_PATH):
             venta_id INT NOT NULL,
             producto_id INT NOT NULL,
             cantidad INT NOT NULL,
-            precio_unitario DEC(18,2) NOT NULL,
-            costo_unitario DEC(18,2) NOT NULL,
+            precio_unitario INT NOT NULL,
+            costo_unitario INT NOT NULL,
             FOREIGN KEY (venta_id) REFERENCES ventas(id),
             FOREIGN KEY (producto_id) REFERENCES productos(id)
         )"""
@@ -105,7 +105,7 @@ def crear_tablas(ruta=DB_PATH):
             id INTEGER PRIMARY KEY,
             cliente_id INT NOT NULL,
             fecha DATETIME NOT NULL,
-            monto DEC(18,2) NOT NULL DEFAULT 0.00,
+            monto INT NOT NULL DEFAULT 0.00,
             nota VARCHAR(120),
             FOREIGN KEY (cliente_id) REFERENCES clientes(id)
         )"""
@@ -117,6 +117,6 @@ def crear_tablas(ruta=DB_PATH):
             fecha DATETIME NOT NULL,
             categoria VARCHAR(50) NOT NULL,
             descripcion VARCHAR(120),
-            monto DEC(18,2) NOT NULL DEFAULT 0.00
+            monto INT NOT NULL DEFAULT 0.00
         )"""
     )
