@@ -1,4 +1,5 @@
 import sqlite3 as sql
+from contextlib import closing
 
 DB_PATH = "cajafacil_database.db"
 
@@ -12,11 +13,11 @@ def consult(ruta: str = DB_PATH, consulta: str = "", parametros: tuple = ()):
         parametros (tupla, optional): Serie de parametros que se utilizaran en conjunto a la consulta almacenados en tupla. Esta vacia por defecto.
     """
     tipo_querry = consulta.strip().upper()
-    try:
-        with sql.connect(ruta) as conexion:
+    with closing(sql.connect(ruta)) as conexion:
+        # Activacion de claves foraneas
+        conexion.execute("PRAGMA foreign_keys = ON")
+        try:
             cursor = conexion.cursor()
-            # Activacion de claves foraneas
-            cursor.execute("PRAGMA foreign_keys = ON")
             # Ejecutando consulta
             cursor.execute(consulta, parametros)
 
@@ -30,9 +31,9 @@ def consult(ruta: str = DB_PATH, consulta: str = "", parametros: tuple = ()):
                 conexion.commit()
                 return cursor.rowcount
 
-    except sql.Error as err:
-        print(f"La consulta ha fallado: {err=}, {type(err)=}")
-        raise
+        except sql.Error as err:
+            print(f"La consulta ha fallado: {err=}, {type(err)=}")
+            raise
 
 
 def ejecutar_transaccion(ruta: str = DB_PATH, operaciones: tuple = ()):
@@ -47,22 +48,48 @@ def ejecutar_transaccion(ruta: str = DB_PATH, operaciones: tuple = ()):
     """
     if not operaciones:
         raise ValueError("La lista de operaciones no puedde estar vacia.")
-    try:
-        with sql.connect(ruta) as conn:
+    with closing(sql.connect(ruta)) as conn:
+        conn.execute("PRAGMA foreign_keys = ON")
+        try:
             cursor = conn.cursor()
-            cursor.execute("PRAGMA foreign_keys = ON")
             for consulta, params in operaciones:
                 cursor.execute(consulta, params)
             conn.commit()
-    except sql.OperationalError as e:
-        print(f"Transaccion fallo: {e}")
-        raise
-    except sql.IntegrityError as e:
-        print(f"Se ha intentado operar sobre un objeto inexistente, Err: {e}")
-        raise
-    except sql.Error as e:
-        print(f"Error general de SQLite: {e}")
-        raise
+        except sql.OperationalError as e:
+            print(f"Transaccion fallo: {e}")
+            raise
+        except sql.IntegrityError as e:
+            print(f"Se ha intentado operar sobre un objeto inexistente, Err: {e}")
+            raise
+        except sql.Error as e:
+            print(f"Error general de SQLite: {e}")
+            raise
+
+
+def transaccion(trabajo, ruta: str = DB_PATH):
+    """Presta cursor a callback para hacer operaciones especificas con mayor libertad.
+
+    Args:
+        trabajo (callback): Funcion a la que se le va a pasar el cursor.
+        ruta (str, optional): Referente a la base de datos. Defaults to DB_PATH.
+
+    Returns:
+        SQL_RESPONSE: Depende de las operaciones realizadas por callback.
+    """
+    with closing(sql.connect(ruta)) as conn:
+        conn.execute("PRAGMA foreign_keys = ON;")
+        cur = conn.cursor()
+        try:
+            result = trabajo(cur)
+            conn.commit()
+            return result
+        except Exception:
+            conn.rollback()
+            raise
+
+
+# NOTA: Todos el dinero sera puesto en CENTAVOS para evitar errores de redondeo. Dado a que este programa no va dirigido a grandes compañias que
+# manejan billones de pesos, considero que esto es lo mejor.
 
 
 def crear_tablas(ruta=DB_PATH):
