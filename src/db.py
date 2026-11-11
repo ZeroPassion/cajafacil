@@ -116,6 +116,7 @@ def crear_tablas(ruta=DB_PATH):
             fecha DATETIME NOT NULL DEFAULT (datetime('now','localtime')),
             tipo_pago CHAR NOT NULL,
             total INT NOT NULL DEFAULT 0.00,
+            CONSTRAINT chk_client_requerido CHECK (tipo_pago IS NOT 'f' OR (cliente_id IS NOT NULL AND cliente_id > 0)),
             CONSTRAINT chk_tipo_pago CHECK (tipo_pago IN ('c','f')),
             FOREIGN KEY (cliente_id) REFERENCES clientes(id)
         )""",
@@ -143,6 +144,7 @@ def crear_tablas(ruta=DB_PATH):
             fecha DATETIME NOT NULL DEFAULT (datetime('now','localtime')), 
             monto INT NOT NULL DEFAULT 0.00,
             nota VARCHAR(120),
+            CONSTRAINT chk_monto CHECK (monto > 0),
             FOREIGN KEY (cliente_id) REFERENCES clientes(id)
         )""",
     )
@@ -154,6 +156,7 @@ def crear_tablas(ruta=DB_PATH):
             fecha DATETIME NOT NULL DEFAULT (datetime('now','localtime')), 
             categoria VARCHAR(50) NOT NULL,
             descripcion VARCHAR(120),
-            monto INT NOT NULL DEFAULT 0.00
+            monto INT NOT NULL DEFAULT 0.00,
+            CONSTRAINT chk_monto CHECK (monto > 0)
         )""",
     )

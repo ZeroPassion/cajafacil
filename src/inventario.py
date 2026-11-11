@@ -50,11 +50,11 @@ def crear_producto(producto: DataProducto, ruta: str = DB_PATH):
         producto.stock_minimo,
     )
     try:
-        if producto.nombre.strip() == "":
+        if producto.nombre.strip() == "" or producto.nombre == None:
             raise ValueError("Nombre vacio")
         result = consult(ruta=ruta, consulta=sql_querry, parametros=values)
         return result
-    except ValueError as err:
+    except ValueError as e:
         print(f"Validacion Fallida: {e}")
     return None
 
@@ -69,8 +69,7 @@ def listar_productos(ruta: str = DB_PATH):
         Array->Tuplas: Devuelve un Array con las tuplas de informacion adentro.
     """
     sql_querry = "SELECT * FROM productos WHERE activo = 1"
-    result = consult(ruta=ruta, consulta=sql_querry)
-    return result
+    return consult(ruta=ruta, consulta=sql_querry)
 
 
 def desactivar_producto(ID, ruta: str = DB_PATH):
@@ -88,6 +87,42 @@ def desactivar_producto(ID, ruta: str = DB_PATH):
     if result == None:
         raise ValueError("La entrada asociada con el ID no existe.")
     return result
+
+
+def editar_producto(ID: int, nuevos_valores: dict = {}, ruta: str = DB_PATH):
+    """Edita aspectos basicos del producto seleccionado
+
+    Args:
+        ID (int): ID del producto en base de datos
+        nuevos_valores (dict, optional): Los valores a cambiar del producto.. Defaults to {}.
+        ruta (str, optional): Referente a la base de datos.. Defaults to DB_PATH.
+
+    Raises:
+        ValueError: Diccionario Vacio
+        ValueError: Columna no permitida dentro del diccionario
+        ValueError: Producto inexistente
+    """
+    if not nuevos_valores.keys():
+        raise ValueError("Diccionario vacio.")
+    columnas_validas = [
+        "nombre",
+        "categoria",
+        "costo",
+        "precio",
+    ]
+    for value in nuevos_valores.keys():
+        if value not in columnas_validas:
+            raise ValueError(
+                "Columna incorrecta dentro del diccionario, revisa por columna invalida."
+            )
+
+    columnas = ", ".join([f"{columna} = ?" for columna in nuevos_valores.keys()])
+    values = list(nuevos_valores.values()) + [ID]
+    sql_querry = f"UPDATE productos SET " + columnas + " WHERE id = ?"
+    result = consult(ruta=ruta, consulta=sql_querry, parametros=values)
+    if result == 0:
+        raise ValueError(f"El producto con ID {ID} no existe.")
+    return True
 
 
 def productos_bajo_stock(ruta: str = DB_PATH):
@@ -154,7 +189,7 @@ def registrar_salida(move: DataMovimiento, ruta: str = DB_PATH):
     Raises:
         ValueError: Cantidad invalida menor o igual que cero.
         ValueError: Handler de IDs no existentes que no cambian nada en la base de datos.
-    """    
+    """
     if move.cantidad <= 0:
         raise ValueError("Cantidad invalida.")
     sql_querry_one = """
@@ -182,38 +217,3 @@ def registrar_salida(move: DataMovimiento, ruta: str = DB_PATH):
         )
     except sql.IntegrityError as e:
         raise ValueError("El producto especificado no existe.") from e
-
-
-def editar_producto(ID: int, nuevos_valores: dict = {}, ruta: str = DB_PATH):
-    """Edita aspectos basicos del producto seleccionado
-
-    Args:
-        ID (int): ID del producto en base de datos
-        nuevos_valores (dict, optional): Los valores a cambiar del producto.. Defaults to {}.
-        ruta (str, optional): Referente a la base de datos.. Defaults to DB_PATH.
-
-    Raises:
-        ValueError: Diccionario Vacio
-        ValueError: Columna no permitida dentro del diccionario
-        ValueError: Producto inexistente
-    """
-    if not nuevos_valores.keys():
-        raise ValueError("Diccionario vacio.")
-    columnas_validas = [
-        "nombre",
-        "categoria",
-        "costo",
-        "precio",
-    ]
-    for value in nuevos_valores.keys():
-        if value not in columnas_validas:
-            raise ValueError(
-                "Columna incorrecta dentro del diccionario, revisa por columna invalida."
-            )
-
-    columnas = ", ".join([f"{columna} = ?" for columna in nuevos_valores.keys()])
-    values = list(nuevos_valores.values()) + [ID]
-    sql_querry = f"UPDATE productos SET " + columnas + " WHERE id = ?"
-    result = consult(ruta=ruta, consulta=sql_querry, parametros=values)
-    if result == 0:
-        raise ValueError(f"El producto con ID {ID} no existe.")
