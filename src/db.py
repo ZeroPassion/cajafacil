@@ -139,11 +139,12 @@ def crear_tablas(ruta=DB_PATH):
         ruta=ruta,
         consulta="""CREATE TABLE IF NOT EXISTS ventas (
             id INTEGER PRIMARY KEY,
-            cliente_id INT NOT NULL,
+            cliente_id INT,
             fecha DATETIME NOT NULL DEFAULT (datetime('now','localtime')),
             tipo_pago CHAR NOT NULL,
             total INT NOT NULL DEFAULT 0.00,
-            CONSTRAINT chk_client_requerido CHECK (tipo_pago IS NOT 'f' OR (cliente_id IS NOT NULL AND cliente_id > 0)),
+            CONSTRAINT chk_cliente_requerido CHECK (tipo_pago IS NOT 'f' OR (cliente_id IS NOT NULL AND cliente_id > 0)),
+            CONSTRAINT chk_client_c_requerido CHECK (tipo_pago = 'c' OR cliente_id IS NOT NULL)
             CONSTRAINT chk_tipo_pago CHECK (tipo_pago IN ('c','f')),
             FOREIGN KEY (cliente_id) REFERENCES clientes(id)
         )""",

@@ -22,7 +22,7 @@ def test_exito_guarda_y_devuelve_el_resultado(ruta):
         cursor.execute(INSERT_CLIENTE, ("Luis",))
         return cursor.lastrowid
 
-    assert transaccion(ruta, trabajo) == 2
+    assert transaccion(ruta=ruta, trabajo=trabajo) == 2
     assert contar_clientes(ruta) == 2
 
 
@@ -32,7 +32,7 @@ def test_un_error_deshace_todo_y_se_propaga(ruta):
         raise RuntimeError("falló a la mitad")
 
     with pytest.raises(RuntimeError):
-        transaccion(ruta, trabajo)
+        transaccion(ruta=ruta, trabajo=trabajo)
     assert contar_clientes(ruta) == 0
 
 
@@ -46,5 +46,5 @@ def test_un_error_de_sqlite_conserva_su_tipo_y_deshace_todo(ruta):
         )
 
     with pytest.raises(sqlite3.IntegrityError):
-        transaccion(ruta, trabajo)
+        transaccion(ruta=ruta,trabajo=trabajo)
     assert consult(ruta=ruta, consulta="SELECT COUNT(*) FROM productos")[0][0] == 0
